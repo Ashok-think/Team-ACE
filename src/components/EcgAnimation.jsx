@@ -55,15 +55,15 @@ const EcgAnimation = ({ color = '#2dd4bf', width = 600, height = 80, speed = 2 }
 
       // Fade mask on right side (leading edge glow)
       const grad = ctx.createLinearGradient(W * 0.7, 0, W, 0);
-      grad.addColorStop(0, 'rgba(10,15,30,0)');
-      grad.addColorStop(1, 'rgba(10,15,30,1)');
+      grad.addColorStop(0, 'rgba(5,10,24,0)');
+      grad.addColorStop(1, 'rgba(5,10,24,1)');
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, W, H);
 
       // Fade mask on left side
       const gradL = ctx.createLinearGradient(0, 0, W * 0.15, 0);
-      gradL.addColorStop(0, 'rgba(10,15,30,1)');
-      gradL.addColorStop(1, 'rgba(10,15,30,0)');
+      gradL.addColorStop(0, 'rgba(5,10,24,1)');
+      gradL.addColorStop(1, 'rgba(5,10,24,0)');
       ctx.fillStyle = gradL;
       ctx.fillRect(0, 0, W, H);
 

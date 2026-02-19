@@ -1,4 +1,4 @@
-/* Reset Vite defaults */
+/* ── Reset Vite defaults ── */
 :root {
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -10,7 +10,6 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  /* Remove Vite's default flex centering that breaks layout */
   display: block;
 }
 

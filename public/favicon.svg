@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <!-- Crescent moon arc -->
+  <path d="M 85 20 A 48 48 0 1 0 85 100" stroke="url(#crescentGrad)" stroke-width="4" stroke-linecap="round" fill="none"/>
+  <!-- ECG heartbeat line -->
+  <polyline points="20,62 40,62 48,62 52,48 56,78 60,38 64,72 68,55 72,62 100,62" stroke="#2dd4bf" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <defs>
+    <linearGradient id="crescentGrad" x1="30" y1="20" x2="30" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#94a3b8"/>
+      <stop offset="100%" stop-color="#64748b"/>
+    </linearGradient>
+  </defs>
+</svg>

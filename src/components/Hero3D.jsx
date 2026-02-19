@@ -33,21 +33,32 @@ const Hero3D = () => {
         <source src={bgVideo} type="video/mp4" />
       </video>
 
-      {/* Dark overlay so text stays readable — adjust opacity for more/less darkness */}
+      {/* Dark overlay — lighter so video is clearly visible */}
       <div style={{
         position: 'absolute',
         inset: 0,
-        background: 'linear-gradient(135deg, rgba(10, 15, 30, 0.82) 0%, rgba(10, 20, 40, 0.75) 100%)',
+        background: 'linear-gradient(180deg, rgba(5, 10, 24, 0.65) 0%, rgba(5, 10, 24, 0.50) 50%, rgba(5, 10, 24, 0.70) 100%)',
       }} />
 
-      {/* Teal color tint at bottom for brand consistency */}
+      {/* Teal brand tint at bottom */}
       <div style={{
         position: 'absolute',
         bottom: 0,
         left: 0,
         right: 0,
-        height: '40%',
+        height: '50%',
         background: 'linear-gradient(to top, rgba(15, 118, 110, 0.12), transparent)',
+        pointerEvents: 'none',
+      }} />
+
+      {/* Subtle top vignette for navbar readability */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '25%',
+        background: 'linear-gradient(to bottom, rgba(5, 10, 24, 0.6), transparent)',
         pointerEvents: 'none',
       }} />
     </div>

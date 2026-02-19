@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatedStethoscope } from './AnimatedIcons';
 import './AssessmentForm.css';
 
 const STEPS = [
@@ -7,25 +9,101 @@ const STEPS = [
   { id: 3, title: 'Symptoms', icon: '🏥' },
 ];
 
-const SelectField = ({ label, name, value, onChange, options }) => (
+// ─── Premium Toggle Button Group ─────────────────────────────
+const ToggleField = ({ label, name, value, onChange, options }) => (
   <div className="form-group">
     <label>{label}</label>
-    <select name={name} value={value} onChange={onChange}>
-      {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-    </select>
-  </div>
-);
-
-const SliderField = ({ label, name, value, onChange, min, max, step = 1, unit = '' }) => (
-  <div className="form-group">
-    <label>{label} <span style={{ color: 'var(--secondary)', fontWeight: 700 }}>{value}{unit}</span></label>
-    <input type="range" name={name} min={min} max={max} step={step} value={value} onChange={onChange} />
-    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '4px' }}>
-      <span>{min}{unit}</span><span>{max}{unit}</span>
+    <div className="toggle-group">
+      {options.map(o => (
+        <button
+          key={o.value}
+          type="button"
+          className={`toggle-btn ${value === o.value ? 'active' : ''}`}
+          onClick={() => onChange({ target: { name, value: o.value, type: 'button' } })}
+        >
+          {o.icon && <span className="toggle-icon">{o.icon}</span>}
+          {o.label}
+        </button>
+      ))}
     </div>
   </div>
 );
 
+// ─── Premium Select Field ────────────────────────────────────
+const SelectField = ({ label, name, value, onChange, options }) => (
+  <div className="form-group">
+    <label>{label}</label>
+    <div className="select-wrapper">
+      <select name={name} value={value} onChange={onChange}>
+        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+      <span className="select-arrow">▾</span>
+    </div>
+  </div>
+);
+
+// ─── Premium Slider ──────────────────────────────────────────
+const SliderField = ({ label, name, value, onChange, min, max, step = 1, unit = '' }) => {
+  const percentage = ((value - min) / (max - min)) * 100;
+  return (
+    <div className="form-group">
+      <label>
+        {label}
+        <span className="slider-value">{value}{unit}</span>
+      </label>
+      <div className="slider-container">
+        <input
+          type="range"
+          name={name}
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          onChange={onChange}
+          style={{ '--progress': `${percentage}%` }}
+        />
+      </div>
+      <div className="slider-limits">
+        <span>{min}{unit}</span>
+        <span>{max}{unit}</span>
+      </div>
+    </div>
+  );
+};
+
+// ─── Animated Step Indicator ─────────────────────────────────
+const StepIndicator = ({ steps, currentStep }) => (
+  <div className="step-indicator">
+    {steps.map((s, i) => (
+      <React.Fragment key={s.id}>
+        <div className={`step-node ${currentStep >= s.id ? 'active' : ''} ${currentStep > s.id ? 'done' : ''}`}>
+          <div className="step-circle">
+            {currentStep > s.id ? (
+              <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200 }}>✓</motion.span>
+            ) : (
+              s.icon
+            )}
+          </div>
+          <span className="step-label">{s.title}</span>
+        </div>
+        {i < steps.length - 1 && (
+          <div className="step-connector">
+            <motion.div
+              className="step-connector-fill"
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: currentStep > s.id ? 1 : 0 }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
+            />
+          </div>
+        )}
+      </React.Fragment>
+    ))}
+  </div>
+);
+
+// ═════════════════════════════════════════════════════════════
+// MAIN FORM
+// ═════════════════════════════════════════════════════════════
 const AssessmentForm = ({ onCalculate }) => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -53,149 +131,150 @@ const AssessmentForm = ({ onCalculate }) => {
   };
 
   return (
-    <div className="glass-panel form-container fade-in" style={{ maxWidth: '720px' }}>
-      <h2 style={{ textAlign: 'center', color: 'var(--secondary)', marginBottom: '0.5rem' }}>🩺 Health Assessment</h2>
-      <p style={{ textAlign: 'center', color: 'var(--text-dim)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-        Answer based on your current health status
-      </p>
-
-      {/* Progress Bar */}
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', alignItems: 'center' }}>
-        {STEPS.map((s, i) => (
-          <React.Fragment key={s.id}>
-            <div style={{ flex: 1, textAlign: 'center' }}>
-              <div style={{
-                width: '36px', height: '36px', borderRadius: '50%', margin: '0 auto 4px',
-                background: step >= s.id ? 'var(--secondary)' : 'rgba(255,255,255,0.08)',
-                border: `2px solid ${step >= s.id ? 'var(--secondary)' : 'rgba(255,255,255,0.15)'}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '1rem', transition: 'all 0.3s',
-                boxShadow: step >= s.id ? '0 0 12px rgba(45,212,191,0.5)' : 'none',
-              }}>
-                {step > s.id ? '✓' : s.icon}
-              </div>
-              <div style={{ fontSize: '0.72rem', color: step >= s.id ? 'var(--secondary)' : 'var(--text-dim)', fontWeight: step === s.id ? 700 : 400 }}>
-                {s.title}
-              </div>
-            </div>
-            {i < STEPS.length - 1 && (
-              <div style={{ flex: 2, height: '2px', background: step > s.id ? 'var(--secondary)' : 'rgba(255,255,255,0.1)', borderRadius: '2px', marginBottom: '20px', transition: 'background 0.3s' }} />
-            )}
-          </React.Fragment>
-        ))}
+    <div className="glass-panel form-container">
+      <div className="form-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+        <AnimatedStethoscope size={48} />
+        <h2>Health Assessment</h2>
+        <p>Answer based on your current health status</p>
       </div>
 
-      {/* Step 1 */}
-      {step === 1 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0 1.5rem' }}>
-          <SelectField label="Gender" name="gender" value={formData.gender} onChange={handleChange} options={[
-            { value: 'Male', label: 'Male' },
-            { value: 'Female', label: 'Female' },
-          ]} />
-          <SelectField label="Age Group" name="ageGroup" value={formData.ageGroup} onChange={handleChange} options={[
-            { value: '18-34', label: '18–34 years' },
-            { value: '35-50', label: '35–50 years' },
-            { value: '51-64', label: '51–64 years' },
-            { value: '65+', label: '65+ years' },
-          ]} />
-          <SelectField label="Family History of Hypertension?" name="familyHistory" value={formData.familyHistory} onChange={handleChange} options={[
-            { value: 'Yes', label: 'Yes' },
-            { value: 'No', label: 'No' },
-          ]} />
-          <SelectField label="Known hypertension patient?" name="isPatient" value={formData.isPatient} onChange={handleChange} options={[
-            { value: 'No', label: 'No' },
-            { value: 'Yes', label: 'Yes' },
-          ]} />
-        </div>
-      )}
+      <StepIndicator steps={STEPS} currentStep={step} />
 
-      {/* Step 2 */}
-      {step === 2 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0 1.5rem' }}>
-          <SliderField label="BMI" name="bmi" value={formData.bmi} onChange={handleChange} min={10} max={50} step={0.5} />
-          <SliderField label="Daily Salt Intake" name="saltIntake" value={formData.saltIntake} onChange={handleChange} min={0} max={15} unit=" g" />
-          <SliderField label="Stress Level" name="stressLevel" value={formData.stressLevel} onChange={handleChange} min={0} max={10} />
-          <SliderField label="Sleep Duration" name="sleepDuration" value={formData.sleepDuration} onChange={handleChange} min={3} max={12} unit=" hrs" />
-          <SelectField label="Smoking Status" name="isSmoker" value={formData.isSmoker} onChange={handleChange} options={[
-            { value: 'No', label: 'Non-Smoker' },
-            { value: 'Yes', label: 'Smoker' },
-          ]} />
-          <SelectField label="Exercise Level" name="exerciseLevel" value={formData.exerciseLevel} onChange={handleChange} options={[
-            { value: 'Low', label: 'Low (rarely active)' },
-            { value: 'Moderate', label: 'Moderate (3–4x/week)' },
-            { value: 'High', label: 'High (daily intense)' },
-          ]} />
-        </div>
-      )}
+      <AnimatePresence mode="wait">
+        {/* Step 1 — Basic Info */}
+        {step === 1 && (
+          <motion.div
+            key="step1"
+            className="form-grid"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <ToggleField label="Gender" name="gender" value={formData.gender} onChange={handleChange} options={[
+              { value: 'Male', label: 'Male', icon: '♂' },
+              { value: 'Female', label: 'Female', icon: '♀' },
+            ]} />
+            <SelectField label="Age Group" name="ageGroup" value={formData.ageGroup} onChange={handleChange} options={[
+              { value: '18-34', label: '18–34 years' },
+              { value: '35-50', label: '35–50 years' },
+              { value: '51-64', label: '51–64 years' },
+              { value: '65+', label: '65+ years' },
+            ]} />
+            <ToggleField label="Family History of Hypertension?" name="familyHistory" value={formData.familyHistory} onChange={handleChange} options={[
+              { value: 'Yes', label: 'Yes', icon: '✓' },
+              { value: 'No', label: 'No', icon: '✗' },
+            ]} />
+            <ToggleField label="Known hypertension patient?" name="isPatient" value={formData.isPatient} onChange={handleChange} options={[
+              { value: 'Yes', label: 'Yes', icon: '✓' },
+              { value: 'No', label: 'No', icon: '✗' },
+            ]} />
+          </motion.div>
+        )}
 
-      {/* Step 3 */}
-      {step === 3 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0 1.5rem' }}>
-          <SelectField label="Currently taking BP medication?" name="takesMedication" value={formData.takesMedication} onChange={handleChange} options={[
-            { value: 'No', label: 'No' },
-            { value: 'Yes', label: 'Yes' },
-          ]} />
-          <SelectField label="Symptom Severity" name="severity" value={formData.severity} onChange={handleChange} options={[
-            { value: 'Mild', label: 'Mild / None' },
-            { value: 'Moderate', label: 'Moderate' },
-            { value: 'Sever', label: 'Severe' },
-          ]} />
-          <SelectField label="Shortness of Breath?" name="breathShortness" value={formData.breathShortness} onChange={handleChange} options={[
-            { value: 'No', label: 'No' },
-            { value: 'Yes', label: 'Yes' },
-          ]} />
-          <SelectField label="Visual Changes / Blurred Vision?" name="visualChanges" value={formData.visualChanges} onChange={handleChange} options={[
-            { value: 'No', label: 'No' },
-            { value: 'Yes', label: 'Yes' },
-          ]} />
-          <SelectField label="Frequent Nose Bleeding?" name="noseBleeding" value={formData.noseBleeding} onChange={handleChange} options={[
-            { value: 'No', label: 'No' },
-            { value: 'Yes', label: 'Yes' },
-          ]} />
-          <SelectField label="How long since first diagnosed?" name="diagnosedDuration" value={formData.diagnosedDuration} onChange={handleChange} options={[
-            { value: '<1 Year', label: 'Less than 1 year / Not diagnosed' },
-            { value: '1 - 5 Years', label: '1–5 years' },
-            { value: '>5 Years', label: 'More than 5 years' },
-          ]} />
-        </div>
-      )}
+        {/* Step 2 — Lifestyle */}
+        {step === 2 && (
+          <motion.div
+            key="step2"
+            className="form-grid"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <SliderField label="BMI" name="bmi" value={formData.bmi} onChange={handleChange} min={10} max={50} step={0.5} />
+            <SliderField label="Daily Salt Intake" name="saltIntake" value={formData.saltIntake} onChange={handleChange} min={0} max={15} unit=" g" />
+            <SliderField label="Stress Level" name="stressLevel" value={formData.stressLevel} onChange={handleChange} min={0} max={10} />
+            <SliderField label="Sleep Duration" name="sleepDuration" value={formData.sleepDuration} onChange={handleChange} min={3} max={12} unit=" hrs" />
+            <ToggleField label="Smoking Status" name="isSmoker" value={formData.isSmoker} onChange={handleChange} options={[
+              { value: 'No', label: 'Non-Smoker', icon: '🚭' },
+              { value: 'Yes', label: 'Smoker', icon: '🚬' },
+            ]} />
+            <SelectField label="Exercise Level" name="exerciseLevel" value={formData.exerciseLevel} onChange={handleChange} options={[
+              { value: 'Low', label: 'Low (rarely active)' },
+              { value: 'Moderate', label: 'Moderate (3–4x/week)' },
+              { value: 'High', label: 'High (daily intense)' },
+            ]} />
+          </motion.div>
+        )}
 
-      {/* Navigation — completely outside any <form> tag */}
-      <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+        {/* Step 3 — Symptoms */}
+        {step === 3 && (
+          <motion.div
+            key="step3"
+            className="form-grid"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <ToggleField label="Currently taking BP medication?" name="takesMedication" value={formData.takesMedication} onChange={handleChange} options={[
+              { value: 'Yes', label: 'Yes', icon: '💊' },
+              { value: 'No', label: 'No', icon: '✗' },
+            ]} />
+            <SelectField label="Symptom Severity" name="severity" value={formData.severity} onChange={handleChange} options={[
+              { value: 'Mild', label: 'Mild / None' },
+              { value: 'Moderate', label: 'Moderate' },
+              { value: 'Sever', label: 'Severe' },
+            ]} />
+            <ToggleField label="Shortness of Breath?" name="breathShortness" value={formData.breathShortness} onChange={handleChange} options={[
+              { value: 'Yes', label: 'Yes', icon: '✓' },
+              { value: 'No', label: 'No', icon: '✗' },
+            ]} />
+            <ToggleField label="Visual Changes / Blurred Vision?" name="visualChanges" value={formData.visualChanges} onChange={handleChange} options={[
+              { value: 'Yes', label: 'Yes', icon: '✓' },
+              { value: 'No', label: 'No', icon: '✗' },
+            ]} />
+            <ToggleField label="Frequent Nose Bleeding?" name="noseBleeding" value={formData.noseBleeding} onChange={handleChange} options={[
+              { value: 'Yes', label: 'Yes', icon: '✓' },
+              { value: 'No', label: 'No', icon: '✗' },
+            ]} />
+            <SelectField label="How long since first diagnosed?" name="diagnosedDuration" value={formData.diagnosedDuration} onChange={handleChange} options={[
+              { value: '<1 Year', label: 'Less than 1 year / Not diagnosed' },
+              { value: '1 - 5 Years', label: '1–5 years' },
+              { value: '>5 Years', label: 'More than 5 years' },
+            ]} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Navigation */}
+      <div className="form-nav">
         {step > 1 && (
-          <button
+          <motion.button
             type="button"
             className="btn-secondary"
-            style={{ flex: 1, padding: '0.9rem', fontSize: '0.95rem' }}
             onClick={() => setStep(s => s - 1)}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
             ← Back
-          </button>
+          </motion.button>
         )}
         {step < 3 ? (
-          <button
+          <motion.button
             type="button"
-            className="btn-primary"
-            style={{ flex: 2, padding: '0.9rem', fontSize: '0.95rem' }}
+            className="btn-primary form-next-btn"
             onClick={() => setStep(s => s + 1)}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
           >
             Next Step →
-          </button>
+          </motion.button>
         ) : (
-          <button
+          <motion.button
             type="button"
-            className="btn-primary"
-            style={{ flex: 2, padding: '0.9rem', fontSize: '0.95rem' }}
+            className="btn-primary form-next-btn"
             onClick={() => onCalculate(formData)}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
           >
             🔍 Analyze My Risk
-          </button>
+          </motion.button>
         )}
       </div>
 
-      <p style={{ textAlign: 'center', color: 'var(--text-dim)', fontSize: '0.8rem', marginTop: '1rem' }}>
-        Step {step} of {STEPS.length}
-      </p>
+      <p className="form-step-counter">Step {step} of {STEPS.length}</p>
     </div>
   );
 };
